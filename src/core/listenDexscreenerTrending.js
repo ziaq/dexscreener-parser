@@ -109,7 +109,7 @@ async function parseTrendingLoop(page) {
     logger.info('Sent trending to web-parser-processor. Addresses in details log');
     logger.details(addresses);
     
-    await wait(8000);
+    await wait(3000);
     await parseTrendingLoop(page)
 
   } catch(error) {
@@ -143,7 +143,7 @@ async function listenDexscreenerTrending() {
     timerId = alertIfFnFreezes(
       "Catch section in try/catch in listenDexscreenerTrending. Probably can't close browser"
     );
-    
+
     if (browser) {
       await browser.close();
     }
