@@ -31,8 +31,9 @@ async function getOpenedPage(attempts = 1) {
 
     lastUsedProxyIndex = proxyIndex;
 
-    browser = await puppeteerRealBrowser({ proxy });
-    const page = browser.page;
+    const realBrowser = await puppeteerRealBrowser({ proxy });
+    const page = realBrowser.page;
+    browser = realBrowser.browser;
 
     await page.goto(
       'https://dexscreener.com/ethereum', { 
