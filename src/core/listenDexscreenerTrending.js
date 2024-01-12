@@ -138,8 +138,6 @@ async function listenDexscreenerTrending() {
       'Failed. Will try again in 5 min',
       error,
     );
-
-    await wait(300000); // 5 min
     
     timerId = alertIfFnFreezes(
       "Catch section in try/catch in listenDexscreenerTrending. Probably can't close browser"
