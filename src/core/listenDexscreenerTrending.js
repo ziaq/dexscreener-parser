@@ -12,6 +12,7 @@ const axios = require('axios');
 
 let lastUsedProxyIndex = 3;
 let browser;
+let errorCount;
 
 async function getOpenedPage(attempts = 1) {
   let timerId;
@@ -57,13 +58,7 @@ async function getOpenedPage(attempts = 1) {
     }
     
     if (attempts === 0) {
-      handleError(
-        'getOpenedPage',
-        'Failed with both proxies',
-        error,
-      );
-
-      return null;
+      throw new Error('Error in getOpenedPage. Failed with both proxies.');
     }
 
     await wait(15000);
@@ -118,14 +113,14 @@ async function parseTrendingLoop(page, startTime) {
   logger.details(addresses);
   
   await wait(3000);
-  await parseTrendingLoop(page, startTime)
+  errorCount = 0;
+  
+  parseTrendingLoop(page, startTime)
 }
 
 async function listenDexscreenerTrending() {
   try {
     const page = await getOpenedPage();
-    if (!page) throw new Error('parseTrendingLoop failed. Will try again');
-
     const initialCookies = await page.cookies();
     await page.setCookie(...initialCookies);
 
@@ -133,12 +128,16 @@ async function listenDexscreenerTrending() {
     await parseTrendingLoop(page, startTime);
 
   } catch(error) {
-    handleError(
-      'listenDexscreenerTrending',
-      'Failed. Will try again',
-      error,
-    );
+    errorCount++;
 
+    if (errorCount === 3) {
+      handleError(
+        'listenDexscreenerTrending',
+        'Failed 3 times in a row. Will try again. Restart this microservice for listening errors after fix',
+        error,
+      );
+    }
+    
     if (browser) browser.close();
     listenDexscreenerTrending(); 
   }
