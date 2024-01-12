@@ -70,52 +70,57 @@ async function getOpenedPage(attempts = 1) {
 }
 
 async function parseTrendingLoop(page, startTime) {
-  const isHourHasPassed = Date.now() - startTime >= 3600000;
+  try {
+    const isHourHasPassed = Date.now() - startTime >= 3600000;
 
-  if (isHourHasPassed) {
-    if (browser) browser.close();
-    listenDexscreenerTrending();
-    return;
-  }
-
-  await page.reload({ waitUntil: 'networkidle0' });
-  const xpath = '//*[@id="root"]/div/main/div/div[2]/div[4]';
-
-  await page.waitForXPath(xpath);
-
-  const elements = await page.$x(xpath);
-  const parentElement = elements[0];
-
-  const hrefs = await page.evaluate(element => {
-    let links = [];
-    if (element) {
-      const anchorElements = element.querySelectorAll('a');
-      anchorElements.forEach(el => {
-        if (el.href) {
-          links.push(el.href);
-        }
-      });
+    if (isHourHasPassed) {
+      if (browser) browser.close();
+      listenDexscreenerTrending();
+      return;
     }
-    return links;
-  }, parentElement);
 
-  const first15Urls = hrefs.slice(0, 15);
-  const addresses = first15Urls.map(url => url.slice(-42));
+    await page.reload({ waitUntil: 'networkidle0' });
+    const xpath = '//*[@id="root"]/div/main/div/div[2]/div[4]';
 
-  await axios({
-    method: 'post',
-    url: `${config.webParserProcessorUrl}/dexscreener-trending`,
-    data: addresses,
-    httpsAgent: selfSslHttpsAgent,
-  });
+    await page.waitForXPath(xpath);
 
-  logger.info('Sent trending to web-parser-processor. Addresses in details log');
-  logger.details(addresses);
-  
-  await wait(3000);
-  errorCount = 0;
-  
-  parseTrendingLoop(page, startTime)
+    const elements = await page.$x(xpath);
+    const parentElement = elements[0];
+
+    const hrefs = await page.evaluate(element => {
+      let links = [];
+      if (element) {
+        const anchorElements = element.querySelectorAll('a');
+        anchorElements.forEach(el => {
+          if (el.href) {
+            links.push(el.href);
+          }
+        });
+      }
+      return links;
+    }, parentElement);
+
+    const first15Urls = hrefs.slice(0, 15);
+    const addresses = first15Urls.map(url => url.slice(-42));
+
+    await axios({
+      method: 'post',
+      url: `${config.webParserProcessorUrl}/dexscreener-trending`,
+      data: addresses,
+      httpsAgent: selfSslHttpsAgent,
+    });
+
+    logger.info('Sent trending to web-parser-processor. Addresses in details log');
+    logger.details(addresses);
+    
+    await wait(3000);
+    errorCount = 0;
+
+    parseTrendingLoop(page, startTime)
+
+  } catch(error) {
+    throw new Error(error);
+  }
 }
 
 async function listenDexscreenerTrending() {
@@ -128,6 +133,8 @@ async function listenDexscreenerTrending() {
     await parseTrendingLoop(page, startTime);
 
   } catch(error) {
+    logger.info(`ListenDexscreenerTrending failed. Will try again. Error:${error}`)
+
     errorCount++;
 
     if (errorCount === 3) {
