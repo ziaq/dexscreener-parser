@@ -74,8 +74,16 @@ async function getOpenedPage(attempts = 1) {
   }
 }
 
-async function parseTrendingLoop(page) {
+async function parseTrendingLoop(page, startTime) {
   try {
+    const isHourHasPassed = Date.now() - startTime >= 3600000;
+
+    if (isHourHasPassed) {
+      if (browser) browser.close();
+      listenDexscreenerTrending();
+      return;
+    }
+
     await page.reload({ waitUntil: 'networkidle0' });
     const xpath = '//*[@id="root"]/div/main/div/div[2]/div[4]';
 
@@ -111,7 +119,7 @@ async function parseTrendingLoop(page) {
     logger.details(addresses);
     
     await wait(3000);
-    await parseTrendingLoop(page)
+    await parseTrendingLoop(page, startTime)
 
   } catch(error) {
     throw new Error(`Error in parseTrendingLoop. Error: ${error}`);
@@ -119,38 +127,25 @@ async function parseTrendingLoop(page) {
 }
 
 async function listenDexscreenerTrending() {
-  let timerId;
-
   try {
     const page = await getOpenedPage();
-    if (!page) {
-      throw new Error('parseTrendingLoop failed. Will try again in 5 min')
-    }
+    if (!page) throw new Error('parseTrendingLoop failed. Will try again');
 
     const initialCookies = await page.cookies();
     await page.setCookie(...initialCookies);
 
-    await parseTrendingLoop(page);
+    const startTime = Date.now();
+    await parseTrendingLoop(page, startTime);
 
   } catch(error) {
     handleError(
       'listenDexscreenerTrending',
-      'Failed. Will try again in 5 min',
+      'Failed. Will try again',
       error,
     );
-    
-    timerId = alertIfFnFreezes(
-      "Catch section in try/catch in listenDexscreenerTrending. Probably can't close browser"
-    );
 
-    if (browser) {
-      await browser.close();
-    }
-
-    listenDexscreenerTrending();
-    
-  } finally {
-    cancelAlertIfFnFreezes(timerId);
+    if (browser) browser.close();
+    listenDexscreenerTrending(); 
   }
 }
 
