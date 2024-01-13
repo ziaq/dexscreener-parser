@@ -13,6 +13,7 @@ const axios = require('axios');
 let lastUsedProxyIndex = 3;
 let browser;
 let isBrowserOpen = false;
+let currentProxyIp;
 let errorCount;
 
 async function closeBrowserIfOpenned() {
@@ -43,6 +44,7 @@ async function getOpenedPage(attempts = 1) {
       password: globalConfig.standardProxies[proxyIndex].password,
     };
 
+    currentProxyIp = proxy.host;
     lastUsedProxyIndex = proxyIndex;
 
     const realBrowser = await puppeteerRealBrowser({ proxy });
@@ -67,6 +69,7 @@ async function getOpenedPage(attempts = 1) {
     return page;
 
   } catch (error) {
+    logger.error(`Error in getOpenedPage. Proxy ${currentProxyIp}. Error: ${error}`)
     await closeBrowserIfOpenned();
     
     if (attempts === 0) {
@@ -131,7 +134,7 @@ async function parseTrendingLoop(page, startTime) {
     parseTrendingLoop(page, startTime);
 
   } catch(error) {
-    logger.info(`parseTrendingLoop failed. Will try again. Error:${error}`)
+    logger.info(`parseTrendingLoop failed. Proxy ${currentProxyIp}. Will try again. Error:${error}`)
     errorCount++;
 
     if (errorCount === 3) {
@@ -159,7 +162,7 @@ async function listenDexscreenerTrending() {
   } catch(error) {
     handleError(
       'listenDexscreenerTrending',
-      `Failed. Error: ${error}`,
+      `Failed. Proxy ${currentProxyIp}. Error: ${error}`,
       error,
     );
   }
