@@ -21,8 +21,8 @@ async function closeBrowserIfOpenned() {
       await browser.close();
       isBrowserOpen = false;
 
-    } catch (error) {
-      throw new Error(`Fail close browser. Error: ${error}`);
+    } catch(error) {
+      logger.error(`Error in closeBrowserIfOpenned. Error: ${error}`);
     }
   }
 }
@@ -128,10 +128,22 @@ async function parseTrendingLoop(page, startTime) {
     await wait(3000);
     errorCount = 0;
 
-    parseTrendingLoop(page, startTime)
+    parseTrendingLoop(page, startTime);
 
   } catch(error) {
-    throw new Error(error);
+    logger.info(`parseTrendingLoop failed. Will try again. Error:${error}`)
+    errorCount++;
+
+    if (errorCount === 3) {
+      handleError(
+        'parseTrendingLoop',
+        'Failed 3 times in a row. Will try again. Restart this microservice for listening errors after fix',
+        error,
+      );
+    }
+    
+    await closeBrowserIfOpenned();
+    listenDexscreenerTrending();
   }
 }
 
@@ -145,20 +157,11 @@ async function listenDexscreenerTrending() {
     await parseTrendingLoop(page, startTime);
 
   } catch(error) {
-    logger.info(`ListenDexscreenerTrending failed. Will try again. Error:${error}`)
-
-    errorCount++;
-
-    if (errorCount === 3) {
-      handleError(
-        'listenDexscreenerTrending',
-        'Failed 3 times in a row. Will try again. Restart this microservice for listening errors after fix',
-        error,
-      );
-    }
-    
-    await closeBrowserIfOpenned();
-    listenDexscreenerTrending(); 
+    handleError(
+      'listenDexscreenerTrending',
+      `Failed. Error: ${error}`,
+      error,
+    );
   }
 }
 
