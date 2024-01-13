@@ -12,7 +12,20 @@ const axios = require('axios');
 
 let lastUsedProxyIndex = 3;
 let browser;
+let isBrowserOpen = false;
 let errorCount;
+
+async function closeBrowserIfOpenned() {
+  if (isBrowserOpen) {
+    try {
+      await browser.close();
+      isBrowserOpen = false;
+
+    } catch (error) {
+      throw new Error(`Fail close browser. Error: ${error}`);
+    }
+  }
+}
 
 async function getOpenedPage(attempts = 1) {
   let timerId;
@@ -35,6 +48,7 @@ async function getOpenedPage(attempts = 1) {
     const realBrowser = await puppeteerRealBrowser({ proxy });
     const page = realBrowser.page;
     browser = realBrowser.browser;
+    isBrowserOpen = true;
 
     await page.goto(
       'https://dexscreener.com/ethereum', { 
@@ -53,9 +67,7 @@ async function getOpenedPage(attempts = 1) {
     return page;
 
   } catch (error) {
-    if (browser) {
-      await browser.close();
-    }
+    await closeBrowserIfOpenned();
     
     if (attempts === 0) {
       throw new Error('Error in getOpenedPage. Failed with both proxies.');
@@ -74,7 +86,7 @@ async function parseTrendingLoop(page, startTime) {
     const isHourHasPassed = Date.now() - startTime >= 3600000;
 
     if (isHourHasPassed) {
-      if (browser) browser.close();
+      await closeBrowserIfOpenned();
       listenDexscreenerTrending();
       return;
     }
@@ -145,7 +157,7 @@ async function listenDexscreenerTrending() {
       );
     }
     
-    if (browser) browser.close();
+    await closeBrowserIfOpenned();
     listenDexscreenerTrending(); 
   }
 }
