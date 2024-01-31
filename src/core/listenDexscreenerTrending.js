@@ -73,8 +73,7 @@ async function getOpenedPage(attempts = 1) {
     await closeBrowserIfOpenned();
     
     if (attempts === 0) {
-      logger.error('Error in getOpenedPage. Failed with both proxies.');
-      return null;
+      throw new Error('Error in getOpenedPage. Failed with both proxies.');
     }
 
     await wait(15000);
@@ -154,7 +153,6 @@ async function parseTrendingLoop(page, startTime) {
 async function listenDexscreenerTrending() {
   try {
     const page = await getOpenedPage();
-    if (!page) return;
     const initialCookies = await page.cookies();
     await page.setCookie(...initialCookies);
 
@@ -164,11 +162,10 @@ async function listenDexscreenerTrending() {
   } catch(error) {
     handleError(
       'listenDexscreenerTrending',
-      `Failed. Proxy ${currentProxyIp}. Error: ${error}`,
+      `Failed. Will try Again. Proxy ${currentProxyIp}. Error: ${error}`,
       error,
     );
 
-  } finally {
     await wait(15000);
     listenDexscreenerTrending();
   }
