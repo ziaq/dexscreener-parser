@@ -140,9 +140,13 @@ async function parseTrendingLoop(page, startTime) {
     if (errorCount === 3) {
       handleError(
         'parseTrendingLoop',
-        'Failed 3 times in a row. Will try again. Restart this microservice for listening errors after fix',
+        'Failed 3 times in a row. Will try again.',
         error,
       );
+
+      setTimeout(() => {
+        errorCount = 0; // Reset errorCount to allow to send the error to telegram again
+      }, 300000); // 5 min
     }
     
     await closeBrowserIfOpenned();
