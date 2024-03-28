@@ -95,11 +95,11 @@ async function parseTrendingLoop(page, startTime) {
     }
 
     await page.reload({ waitUntil: 'networkidle0' });
-    const xpath = '//*[@id="root"]/div/main/div/div[2]/div[4]';
+    const xpath = 'xpath/.//*[@id="root"]/div/main/div/div[2]/div[4]';
 
-    await page.waitForXPath(xpath);
+    await page.waitForSelector(xpath);
 
-    const elements = await page.$x(xpath);
+    const elements = await page.$$(xpath);
     const parentElement = elements[0];
 
     const hrefs = await page.evaluate(element => {
