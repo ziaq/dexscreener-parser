@@ -166,7 +166,7 @@ async function listenDexscreenerTrending() {
   } catch(error) {
     handleError(
       'listenDexscreenerTrending',
-      `Failed. Will try Again. Proxy ${currentProxyIp}. Error: ${error}`,
+      `Failed. Will try Again. Error: ${error}`,
       error,
     );
 
