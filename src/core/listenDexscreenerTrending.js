@@ -137,16 +137,16 @@ async function parseTrendingLoop(page, startTime) {
     logger.info(`parseTrendingLoop failed. Proxy ${currentProxyIp}. Will try again. Error:${error}`)
     errorCount++;
 
-    if (errorCount === 3) {
+    if (errorCount === 15) {
       handleError(
         'parseTrendingLoop',
-        'Failed 3 times in a row. Will try again.',
+        'Failed 15 times in a row. Will try again.',
         error,
       );
 
       setTimeout(() => {
         errorCount = 0; // Reset errorCount to allow to send the error to telegram again
-      }, 300000); // 5 min
+      }, 1500000); // 15 min
     }
     
     await closeBrowserIfOpenned();
