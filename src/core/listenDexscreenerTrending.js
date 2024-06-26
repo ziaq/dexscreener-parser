@@ -94,7 +94,7 @@ async function parseTrendingLoop(page, startTime) {
       return;
     }
 
-    await page.reload({ waitUntil: 'networkidle0' });
+    await page.reload({ waitUntil: 'load' });
     const xpath = 'xpath/.//*[@id="root"]/div/main/div/div[2]/div[4]';
 
     await page.waitForSelector(xpath);
