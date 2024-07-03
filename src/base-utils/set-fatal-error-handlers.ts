@@ -1,6 +1,6 @@
 import { config } from '../../config';
-import { logger } from '@/base-utils/logger';
-import { sendTgMsg } from '@/base-utils/sendTgMsg';
+import { logger } from './logger';
+import { sendTgMsg } from './send-tg-msg';
 
 export function setFatalErrorHandlers() {
   process.on('uncaughtException', (error) => {

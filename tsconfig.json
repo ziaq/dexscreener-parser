@@ -8,11 +8,10 @@
     "strict": true,
     "moduleResolution": "node",
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    }
+    "forceConsistentCasingInFileNames": true
+  },
+  "tsc-alias": {
+    "resolveFullPaths": true
   },
   "include": ["**/*.ts", "config.ts"],
   "exclude": ["node_modules", "dist", ".cache"]

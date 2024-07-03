@@ -1,6 +1,6 @@
 import { Telegraf } from 'telegraf';
 import { config } from '../../config';
-import { logger } from '@/base-utils/logger';
+import { logger } from './logger';
 
 const bot = new Telegraf(config.telegramBotToken);
 

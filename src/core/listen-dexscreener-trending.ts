@@ -5,12 +5,12 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { Browser, Page } from 'puppeteer';
 import { config } from '../../config';
-import { globalConfig } from '../../../global-config/globalConfig';
-import { alertIfFnFreezes, cancelAlertIfFnFreezes } from '@/base-utils/alertIfFnFreezes';
-import { handleError } from '@/base-utils/handleError';
-import { logger } from '@/base-utils/logger';
-import { selfSslHttpsAgent } from '@/connections/selfSslHttpsAgent';
-import { wait } from '@/base-utils/wait';
+import { globalConfig } from '../../../global-config/global-config';
+import { alertIfFnFreezes, cancelAlertIfFnFreezes } from '../base-utils/alert-if-fn-freezes';
+import { handleError } from '../base-utils/handle-error';
+import { logger } from '../base-utils/logger';
+import { selfSslHttpsAgent } from '../connections/selfSslHttpsAgent';
+import { wait } from '../base-utils/wait';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const cloudflareBypassScriptPath = path.join(__dirname, 'cloudflare-bypass-script.ahk');

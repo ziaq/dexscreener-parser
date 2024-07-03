@@ -1,4 +1,4 @@
-import { handleError } from '@/base-utils/handleError';
+import { handleError } from './handle-error';
 
 export function alertIfFnFreezes(fnName: string): NodeJS.Timeout {
   const timerId = setTimeout(() => {
