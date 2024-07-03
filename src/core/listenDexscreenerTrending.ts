@@ -53,7 +53,7 @@ async function clickInCloudflareCheckbox(page: Page): Promise<void> {
   } catch (error) {
     throw new Error(`Error in clickInCloudflareCheckbox. Error: ${error}`);
   }
-};
+}
 
 
 async function getOpenedPage(attempts = 1): Promise<Page> {
