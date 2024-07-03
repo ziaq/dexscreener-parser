@@ -9,7 +9,7 @@ import { globalConfig } from '../../../global-config/global-config';
 import { alertIfFnFreezes, cancelAlertIfFnFreezes } from '../base-utils/alert-if-fn-freezes';
 import { handleError } from '../base-utils/handle-error';
 import { logger } from '../base-utils/logger';
-import { selfSslHttpsAgent } from '../connections/selfSslHttpsAgent';
+import { selfSslHttpsAgent } from '../connections/self-ssl-https-agent';
 import { wait } from '../base-utils/wait';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

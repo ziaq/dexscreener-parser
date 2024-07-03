@@ -1,5 +1,5 @@
-import { setFatalErrorHandlers } from './base-utils/setFatalErrorHandlers';
-import { listenDexscreenerTrending } from './core/listenDexscreenerTrending';
+import { setFatalErrorHandlers } from './base-utils/set-fatal-error-handlers';
+import { listenDexscreenerTrending } from './core/listen-dexscreener-trending';
 
 setFatalErrorHandlers();
 listenDexscreenerTrending();
