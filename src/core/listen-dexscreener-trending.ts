@@ -73,6 +73,7 @@ async function getOpenedPage(attempts = 1): Promise<Page> {
 
     const realBrowserAndPage = await connect({
       headless: 'auto',
+      args: ['--window-size=800,600'],
       fingerprint: false,
       turnstile: false,
       proxy,
