@@ -1,4 +1,4 @@
 node_modules
 logs/*
-config/config.js
+config.ts
 .cache

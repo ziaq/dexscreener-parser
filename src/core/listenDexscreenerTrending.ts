@@ -1,20 +1,25 @@
-const logger = require('../base-utils/logger');
-const globalConfig = require('../../../global-config/globalConfig');
-const wait = require('../base-utils/wait');
-const handleError = require('../base-utils/handleError');
-const { 
-  alertIfFnFreezes, 
-  cancelAlertIfFnFreezes 
-} = require('../base-utils/alertIfFnFreezes');
-const selfSslHttpsAgent = require('../connections/selfSslHttpsAgent');
-const config = require('../../config/config');
-const axios = require('axios');
+import axios from 'axios';
+import { connect } from 'puppeteer-real-browser';
+import { exec } from 'child_process';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { Browser, Page } from 'puppeteer';
+import { config } from '../../config';
+import { globalConfig } from '../../../global-config/globalConfig';
+import { alertIfFnFreezes, cancelAlertIfFnFreezes } from '@/base-utils/alertIfFnFreezes';
+import { handleError } from '@/base-utils/handleError';
+import { logger } from '@/base-utils/logger';
+import { selfSslHttpsAgent } from '@/connections/selfSslHttpsAgent';
+import { wait } from '@/base-utils/wait';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const cloudflareBypassScriptPath = path.join(__dirname, 'cloudflare-bypass-script.ahk');
 
 let lastUsedProxyIndex = 3;
-let browser;
+let browser: Browser;
 let isBrowserOpen = false;
-let currentProxyIp;
-let errorCount;
+let currentProxyIp: string;
+let errorCount = 0;
 
 async function closeBrowserIfOpenned() {
   if (isBrowserOpen) {
@@ -28,14 +33,35 @@ async function closeBrowserIfOpenned() {
   }
 }
 
-async function getOpenedPage(attempts = 1) {
-  let timerId;
+async function clickInCloudflareCheckbox(page: Page): Promise<void> {
+  try {
+    const elements = await page.$$('iframe');
+
+    for (const element of elements) {
+      const iframeSrcURL = await element.evaluate(node => node.src);
+      if (!iframeSrcURL.includes('turnstile')) continue;
+
+      const box = await element.boundingBox();
+      if (!box) continue;
+
+      const x = box.x * 2.4; // Manually curated adjustment coefficient
+      const y = box.y * 3.8; // Manually curated adjustment coefficient
+      
+      exec(`"${cloudflareBypassScriptPath}" ${x} ${y}`);
+      return;
+    }
+  } catch (error) {
+    throw new Error(`Error in clickInCloudflareCheckbox. Error: ${error}`);
+  }
+};
+
+
+async function getOpenedPage(attempts = 1): Promise<Page> {
+  const timerId = alertIfFnFreezes('getOpenedPage in parseDexscreenerTrending');
 
   try {
-    timerId = alertIfFnFreezes('getOpenedPage in parseDexscreenerTrending');
-    const { puppeteerRealBrowser } = await import('puppeteer-real-browser')
-
     const proxyIndex = lastUsedProxyIndex === 3 ? 4 : 3;
+    lastUsedProxyIndex = proxyIndex;
 
     const proxy = {
       host: globalConfig.standardProxies[proxyIndex].host,
@@ -43,28 +69,27 @@ async function getOpenedPage(attempts = 1) {
       username: globalConfig.standardProxies[proxyIndex].username,
       password: globalConfig.standardProxies[proxyIndex].password,
     };
-
     currentProxyIp = proxy.host;
-    lastUsedProxyIndex = proxyIndex;
 
-    const realBrowser = await puppeteerRealBrowser({ proxy });
-    const page = realBrowser.page;
-    browser = realBrowser.browser;
+    const realBrowserAndPage = await connect({
+      headless: 'auto',
+      fingerprint: false,
+      turnstile: false,
+      proxy,
+    });
+
+    const page = realBrowserAndPage.page;
+    browser = realBrowserAndPage.browser;
     isBrowserOpen = true;
 
     await page.goto(
-      'https://dexscreener.com/ethereum', { 
-        waitUntil: 'domcontentloaded' 
-      },
+      'https://dexscreener.com/ethereum', 
+      { waitUntil: 'domcontentloaded' },
     );
-
     await wait(10000);
 
-    await page.keyboard.press('Tab');
-    await wait(2000);
-
-    await page.keyboard.press('Space');
-    await wait(8000);
+    await clickInCloudflareCheckbox(page);
+    await wait(5000);
 
     return page;
 
@@ -84,7 +109,7 @@ async function getOpenedPage(attempts = 1) {
   }
 }
 
-async function parseTrendingLoop(page, startTime) {
+async function parseTrendingLoop(page: Page, startTime: number) {
   try {
     const isHourHasPassed = Date.now() - startTime >= 3600000;
 
@@ -102,8 +127,8 @@ async function parseTrendingLoop(page, startTime) {
     const elements = await page.$$(xpath);
     const parentElement = elements[0];
 
-    const hrefs = await page.evaluate(element => {
-      let links = [];
+    const hrefs = await page.evaluate((element: Element) => {
+      const links: string[] = [];
       if (element) {
         const anchorElements = element.querySelectorAll('a');
         anchorElements.forEach(el => {
@@ -116,7 +141,7 @@ async function parseTrendingLoop(page, startTime) {
     }, parentElement);
 
     const first15Urls = hrefs.slice(0, 15);
-    const addresses = first15Urls.map(url => url.slice(-42));
+    const addresses = first15Urls.map((url: string) => url.slice(-42));
 
     await axios({
       method: 'post',
@@ -126,7 +151,6 @@ async function parseTrendingLoop(page, startTime) {
     });
 
     logger.info('Sent trending to web-parser-processor. Addresses in details log');
-    logger.details(addresses);
     
     await wait(3000);
     errorCount = 0;
@@ -141,7 +165,7 @@ async function parseTrendingLoop(page, startTime) {
       handleError(
         'parseTrendingLoop',
         'Failed 15 times in a row. Will try again.',
-        error,
+        error as Error,
       );
 
       setTimeout(() => {
@@ -154,7 +178,7 @@ async function parseTrendingLoop(page, startTime) {
   }
 }
 
-async function listenDexscreenerTrending() {
+export async function listenDexscreenerTrending() {
   try {
     const page = await getOpenedPage();
     const initialCookies = await page.cookies();
@@ -167,12 +191,10 @@ async function listenDexscreenerTrending() {
     handleError(
       'listenDexscreenerTrending',
       `Failed. Will try Again. Error: ${error}`,
-      error,
+      error as Error,
     );
 
     await wait(15000);
     listenDexscreenerTrending();
   }
 }
-
-module.exports = listenDexscreenerTrending;

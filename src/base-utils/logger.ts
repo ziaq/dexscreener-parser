@@ -1,17 +1,25 @@
-const { createLogger, format, transports } = require('winston');
-const DailyRotateFile = require('winston-daily-rotate-file');
+import { createLogger, format, transports, Logger } from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
+
 const { combine, timestamp, printf } = format;
 
-const customFormat = (customLabel) => printf(({ timestamp, level, message }) => {
+interface CustomLogger {
+  info: (message: string) => void;
+  error: (message: string) => void;
+  details: (message: string) => void;
+}
+
+const customFormat = (customLabel: string) => printf(({ timestamp, level, message }) => {
   const date = new Date(timestamp);
-  const formattedTimestamp = date.toLocaleString('ru-RU', { hour12: false }) +
-    ' :' + String(date.getMilliseconds()).padStart(3, '0');
+  const formattedTimestamp = 
+    `${date.toLocaleString('ru-RU', { hour12: false })} :${String(date.getMilliseconds()).padStart(3, '0')}`;
+    
   return `${formattedTimestamp} ${level} [${customLabel}]: ${message}`;
 });
 
 const detailsTransports = [
   new DailyRotateFile({
-    filename: `logs/details-%DATE%.log`,
+    filename: 'logs/details-%DATE%.log',
     datePattern: 'DD-MM-YYYY',
     maxSize: '10m',
     maxFiles: '3d',
@@ -21,7 +29,7 @@ const detailsTransports = [
 
 const appTransports = [
   new DailyRotateFile({
-    filename: `logs/app-%DATE%.log`,
+    filename: 'logs/app-%DATE%.log',
     datePattern: 'DD-MM-YYYY',
     maxSize: '10m',
     maxFiles: '3d',
@@ -32,7 +40,10 @@ const appTransports = [
   }),
 ];
 
-const createCustomLabelLogger = (customLabel, loggerTransports) => createLogger({
+const createCustomLabelLogger = (
+  customLabel: string, 
+  loggerTransports: Array<transports.ConsoleTransportInstance | DailyRotateFile>
+): Logger => createLogger({
   format: combine(timestamp(), customFormat(customLabel)),
   transports: loggerTransports,
 });
@@ -43,7 +54,7 @@ const loggers = {
   details: createCustomLabelLogger('details', detailsTransports),
 };
 
-module.exports = {
+export const logger: CustomLogger = {
   info: loggers.info.info.bind(loggers.info),
   error: loggers.error.error.bind(loggers.error),
   details: loggers.details.info.bind(loggers.details),

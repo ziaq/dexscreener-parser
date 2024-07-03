@@ -1,9 +1,8 @@
-const sendTgMsg = require('./sendTgMsg');
-const logger = require('./logger');
-const config = require('../../config/config');
+import { config } from '../../config';
+import { logger } from '@/base-utils/logger';
+import { sendTgMsg } from '@/base-utils/sendTgMsg';
 
-function setFatalErrorHandlers() {
-
+export function setFatalErrorHandlers() {
   process.on('uncaughtException', (error) => {
       logger.error(`Uncaught exception. Error: ${error}`);
       sendTgMsg(
@@ -12,13 +11,9 @@ function setFatalErrorHandlers() {
   });
 
   process.on('unhandledRejection', (reason, promise) => {
-      logger.error(
-        `Unhandled promise rejection, promise ${JSON.stringify(promise)} reason ${reason}`
-      );
+      logger.error(`Unhandled promise rejection, promise ${JSON.stringify(promise)} reason ${reason}`);
       sendTgMsg(
         `Module ${config.microserviceName} died`, config.extraAttentionChatId
       ).then(() => process.exit(1));
   });
 }
-
-module.exports = setFatalErrorHandlers;

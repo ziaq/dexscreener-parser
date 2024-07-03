@@ -1,0 +1,24 @@
+import { Telegraf } from 'telegraf';
+import { config } from '../../config';
+import { logger } from '@/base-utils/logger';
+
+const bot = new Telegraf(config.telegramBotToken);
+
+bot.launch();
+
+// Enable graceful stop
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));
+
+export async function sendTgMsg(message: string, chatId: string = config.telegramChatId): Promise<void> {
+  try {
+    await bot.telegram.sendMessage(chatId, message, {
+      parse_mode: 'HTML',
+      // @ts-ignore
+      disable_web_page_preview: true,
+    });
+
+  } catch (error: any) {
+    logger.error(`Can not send message to telegram. Error: ${error.message}`);
+  }
+};
