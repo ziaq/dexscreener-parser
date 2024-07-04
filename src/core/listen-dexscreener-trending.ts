@@ -44,8 +44,8 @@ async function clickInCloudflareCheckbox(page: Page): Promise<void> {
       const box = await element.boundingBox();
       if (!box) continue;
 
-      const x = box.x * 2.4; // Manually curated adjustment coefficient
-      const y = box.y * 3.8; // Manually curated adjustment coefficient
+      const x = box.x * 1.1; // Manually curated adjustment coefficient
+      const y = box.y * 1.7; // Manually curated adjustment coefficient
       
       exec(`"${cloudflareBypassScriptPath}" ${x} ${y}`);
       return;
