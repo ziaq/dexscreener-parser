@@ -5,7 +5,7 @@ declare module 'puppeteer-real-browser' {
     headless?: boolean | 'new' | 'auto';
     args?: string[];
     customConfig?: object;
-    skipTarget?: any[];
+    skipTarget?: string[];
     fingerprint?: boolean;
     turnstile?: boolean;
     connectOption?: object;
