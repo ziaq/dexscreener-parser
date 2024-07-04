@@ -18,4 +18,3 @@ export async function handleError(
 
   sendTgMsg(errorMsg, config.extraAttentionChatId);
 }
-
