@@ -48,7 +48,6 @@ async function clickInCloudflareCheckbox(page: Page): Promise<void> {
       const y = box.y * 1.7; // Manually curated adjustment coefficient
       
       exec(`"${cloudflareBypassScriptPath}" ${x} ${y}`);
-      return;
     }
   } catch (error) {
     throw new Error(`Error in clickInCloudflareCheckbox. Error: ${error}`);
