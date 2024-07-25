@@ -33,22 +33,22 @@ async function closeBrowserIfOpenned() {
   }
 }
 
-async function clickInCloudflareCheckbox(page: Page): Promise<void> {
-  try {
-    const element = await page.waitForSelector('#turnstile-wrapper > div > div');
-    if (!element) throw new Error('const element is empty')
+// async function clickInCloudflareCheckbox(page: Page): Promise<void> {
+//   try {
+//     // const element = await page.waitForSelector('#turnstile-wrapper > div > div');
+//     // if (!element) throw new Error('const element is empty');
 
-    const box = await element.boundingBox();
-    if (!box) throw new Error('const box is empty')
+//     // const box = await element.boundingBox();
+//     // if (!box) throw new Error('const box is empty');
 
-    const x = box.x * 1.1; // Manually curated adjustment coefficient
-    const y = box.y * 1.7; // Manually curated adjustment coefficient
+//     // const x = box.x * 1.1; // Manually curated adjustment coefficient
+//     // const y = box.y * 1.7; // Manually curated adjustment coefficient
     
-    exec(`"${cloudflareBypassScriptPath}" ${x} ${y}`);
-  } catch (error) {
-    throw new Error(`Error in clickInCloudflareCheckbox. Error: ${error}`);
-  }
-}
+//     exec(`"${cloudflareBypassScriptPath}"`);
+//   } catch (error) {
+//     throw new Error(`Error in clickInCloudflareCheckbox. Error: ${error}`);
+//   }
+// }
 
 
 async function getOpenedPage(attempts = 1): Promise<Page> {
@@ -84,7 +84,9 @@ async function getOpenedPage(attempts = 1): Promise<Page> {
     );
     await wait(10000);
 
-    await clickInCloudflareCheckbox(page);
+    exec(`"${cloudflareBypassScriptPath}"`);
+
+    // await clickInCloudflareCheckbox(page);
     await wait(5000);
 
     return page;
