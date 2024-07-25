@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { connect } from 'puppeteer-real-browser';
-import { exec } from 'child_process';
-import path from 'path';
-import { fileURLToPath } from 'url';
+// import { exec } from 'child_process';
+// import path from 'path';
+// import { fileURLToPath } from 'url';
 import { Browser, Page } from 'puppeteer';
 import { config } from '../../config';
 import { globalConfig } from '../../../global-config/global-config';
@@ -12,8 +12,8 @@ import { logger } from '../base-utils/logger';
 import { selfSslHttpsAgent } from '../connections/self-ssl-https-agent';
 import { wait } from '../base-utils/wait';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const cloudflareBypassScriptPath = path.join(__dirname, 'cloudflare-bypass-script.ahk');
+// const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// const cloudflareBypassScriptPath = path.join(__dirname, 'cloudflare-bypass-script.ahk');
 
 let lastUsedProxyIndex = 3;
 let browser: Browser;
@@ -33,16 +33,16 @@ async function closeBrowserIfOpenned() {
   }
 }
 
-async function clickInCloudflareCheckbox() {
-  try {
-    const x = 540; // Manually calculated
-    const y = 400; // Manually calculated
+// async function clickInCloudflareCheckbox() {
+//   try {
+//     const x = 540; // Manually calculated
+//     const y = 380; // Manually calculated
     
-    exec(`"${cloudflareBypassScriptPath}" ${x} ${y}`);
-  } catch (error) {
-    throw new Error(`Error in clickInCloudflareCheckbox. Error: ${error}`);
-  }
-}
+//     exec(`"${cloudflareBypassScriptPath}" ${x} ${y}`);
+//   } catch (error) {
+//     throw new Error(`Error in clickInCloudflareCheckbox. Error: ${error}`);
+//   }
+// }
 
 
 async function getOpenedPage(attempts = 1): Promise<Page> {
@@ -77,11 +77,9 @@ async function getOpenedPage(attempts = 1): Promise<Page> {
       { waitUntil: 'domcontentloaded' },
     );
     await wait(10000);
-    
-    console.log(`Debag before clickInCloudflareCheckbox`)
 
-    await clickInCloudflareCheckbox();
-    await wait(5000);
+    // await clickInCloudflareCheckbox();
+    // await wait(5000);
 
     return page;
 
