@@ -1,8 +1,8 @@
 import axios from 'axios';
+import appRoot from 'app-root-path';
 import { connect } from 'puppeteer-real-browser';
-// import { exec } from 'child_process';
-// import path from 'path';
-// import { fileURLToPath } from 'url';
+import { exec } from 'child_process';
+import path from 'path';
 import { Browser, Page } from 'puppeteer';
 import { config } from '../../config';
 import { globalConfig } from '../../../global-config/global-config';
@@ -12,8 +12,7 @@ import { logger } from '../base-utils/logger';
 import { selfSslHttpsAgent } from '../connections/self-ssl-https-agent';
 import { wait } from '../base-utils/wait';
 
-// const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// const cloudflareBypassScriptPath = path.join(__dirname, 'cloudflare-bypass-script.ahk');
+const clickByCoordinatesScriptPath = path.join(appRoot.path, 'click-by-coordinates.ahk');
 
 let lastUsedProxyIndex = 3;
 let browser: Browser;
@@ -33,16 +32,16 @@ async function closeBrowserIfOpenned() {
   }
 }
 
-// async function clickInCloudflareCheckbox() {
-//   try {
-//     const x = 540; // Manually calculated
-//     const y = 380; // Manually calculated
+async function clickInCloudflareCheckbox() {
+  try {
+    const x = 540; // Manually calculated
+    const y = 380; // Manually calculated
     
-//     exec(`"${cloudflareBypassScriptPath}" ${x} ${y}`);
-//   } catch (error) {
-//     throw new Error(`Error in clickInCloudflareCheckbox. Error: ${error}`);
-//   }
-// }
+    exec(`"${clickByCoordinatesScriptPath}" ${x} ${y}`);
+  } catch (error) {
+    throw new Error(`Error in clickInCloudflareCheckbox. Error: ${error}`);
+  }
+}
 
 
 async function getOpenedPage(attempts = 1): Promise<Page> {
@@ -78,8 +77,8 @@ async function getOpenedPage(attempts = 1): Promise<Page> {
     );
     await wait(10000);
 
-    // await clickInCloudflareCheckbox();
-    // await wait(5000);
+    await clickInCloudflareCheckbox();
+    await wait(10000);
 
     return page;
 
@@ -171,8 +170,6 @@ async function parseTrendingLoop(page: Page, startTime: number) {
 export async function listenDexscreenerTrending() {
   try {
     const page = await getOpenedPage();
-    const initialCookies = await page.cookies();
-    await page.setCookie(...initialCookies);
 
     const startTime = Date.now();
     await parseTrendingLoop(page, startTime);
@@ -180,7 +177,7 @@ export async function listenDexscreenerTrending() {
   } catch(error) {
     handleError(
       'listenDexscreenerTrending',
-      `Failed. Will try Again. Error: ${error}`,
+      `Failed. Will try Again in 15 sec`,
       error as Error,
     );
 

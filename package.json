@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "npm run build && node dist/dexscreener-parser/src/index.js",
-    "build": "tsc && eslint src/**/*.ts && tsc-alias && ncp src/core/cloudflare-bypass-script.ahk dist/dexscreener-parser/src/core/cloudflare-bypass-script.ahk",
+    "build": "tsc && eslint src/**/*.ts && tsc-alias",
     "dev": "npx tsx src/index.ts",
     "lint": "eslint src/**/*.ts"
   },
@@ -14,6 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "app-root-path": "^3.1.0",
     "axios": "^1.7.2",
     "puppeteer": "^22.14.0",
     "puppeteer-real-browser": "^1.2.20",
@@ -25,7 +26,6 @@
     "@types/node": "^20.14.12",
     "eslint": "^8.57.0",
     "globals": "^15.8.0",
-    "ncp": "^2.0.0",
     "tsc-alias": "^1.8.10",
     "tsx": "^4.16.2",
     "typescript": "^5.5.4",
