@@ -35,7 +35,7 @@ async function closeBrowserIfOpenned() {
 async function clickInCloudflareCheckbox() {
   try {
     const x = 540; // Manually calculated
-    const y = 380; // Manually calculated
+    const y = 415; // Manually calculated
     
     exec(`"${clickByCoordinatesScriptPath}" ${x} ${y}`);
   } catch (error) {
